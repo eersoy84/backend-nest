@@ -1,0 +1,26 @@
+@API_BASE=http://localhost:5000/api
+### login
+post {{API_BASE}}/auth/login
+Content-Type: application/json
+
+{   
+    "email":"deneme@gmail.com",
+    "password":"Mhp.1923",
+    "csrfToken":"asdf",
+    "callbackUrl":"asdf",
+    "redirect":true,
+    "json":true
+}
+
+### register
+
+post {{API_BASE}}/auth/register
+Content-Type: application/json
+
+{
+    "email":"deneme3@gmail.com",
+    "password":"Mhp.1923",
+    "firstName":"Eyüp",
+    "lastName":"Ersoy",
+    "createdIp":"192.189.23.55"
+}

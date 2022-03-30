@@ -1,0 +1,692 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model AppExecution {
+  id         BigInt   @id @unique(map: "id") @default(autoincrement()) @db.UnsignedBigInt
+  date       DateTime @default(now()) @db.Timestamp(0)
+  client     String   @db.VarChar(64)
+  server     String   @db.VarChar(64)
+  userAgent  String   @map("user_agent") @db.VarChar(512)
+  url        String   @db.VarChar(1024)
+  getParams  String   @map("get_params") @db.Text
+  postParams String?  @map("post_params") @db.Text
+  headers    String   @db.Text
+  protocol   String   @db.Text
+  method     String?  @default("UNDEFINED") @db.VarChar(10)
+  user       BigInt?
+
+  @@index([userAgent], map: "userAgent")
+  @@map("app_execution")
+}
+
+model AppResponse {
+  id        BigInt             @id @default(autoincrement())
+  execution BigInt             @db.UnsignedBigInt
+  level     app_response_level @default(debug)
+  file      String             @db.VarChar(128)
+  line      Int
+  response  String             @db.Text
+  details   String?            @db.Text
+  code      Int
+  headers   String             @db.Text
+  backtrace String             @db.Text
+
+  @@index([execution], map: "exec_idx")
+  @@map("app_response")
+}
+
+model BrandCategory {
+  id         Int        @id @default(autoincrement())
+  brandId    Int        @map("brand_id")
+  categoryId Int        @map("category_id")
+  brands     brands     @relation(fields: [brandId], references: [id], onDelete: Cascade, map: "brand_category_ibfk_1")
+  categories categories @relation(fields: [categoryId], references: [id], onDelete: Cascade, map: "brand_category_ibfk_2")
+
+  @@unique([categoryId, brandId], map: "categoryId")
+  @@index([brandId], map: "brandId")
+  @@map("brand_category")
+}
+
+model brands {
+  id             Int             @id @default(autoincrement())
+  name           String          @db.VarChar(100)
+  brand_category BrandCategory[]
+  model          model[]
+}
+
+model categories {
+  id               Int             @id @default(autoincrement())
+  name             String          @db.VarChar(128)
+  parrent          Int?
+  url              String?         @db.VarChar(512)
+  disabled         Int             @default(0)
+  categories       categories?     @relation("categoriesTocategories_parrent", fields: [parrent], references: [id], onUpdate: SetNull, map: "categories_ibfk_1")
+  brand_category   BrandCategory[]
+  other_categories categories[]    @relation("categoriesTocategories_parrent")
+  model            model[]
+
+  @@index([parrent], map: "parrent")
+}
+
+model CcBin {
+  id       Int     @id @default(autoincrement())
+  bin      String  @unique(map: "bin") @db.VarChar(10)
+  posId    Int     @map("pos_id")
+  isDebit  Int     @map("is_debit")
+  bankName String? @map("bank_name") @db.VarChar(128)
+  bankCode Int?    @map("bank_code")
+  cardType String? @map("card_type") @db.VarChar(32)
+  image    String? @db.VarChar(512)
+
+  @@map("cc_bin")
+}
+
+model EmailTokens {
+  id     Int                 @id @default(autoincrement())
+  userId Int                 @map("user_id")
+  reason email_tokens_reason
+  token  String              @unique(map: "token") @db.VarChar(128)
+  hash   String              @db.VarChar(128)
+  state  email_tokens_state  @default(created)
+  date   DateTime            @default(now()) @db.Timestamp(0)
+  users  users               @relation(fields: [userId], references: [id], onDelete: Cascade, map: "email_tokens_ibfk_1")
+
+  @@index([userId], map: "email_tokens_ibfk_1")
+  @@map("email_tokens")
+}
+
+model FeaturedProduct {
+  id        Int      @id @default(autoincrement())
+  productId Int      @map("product_id")
+  startDate DateTime @default(now()) @map("start_date") @db.Timestamp(0)
+  endDate   DateTime @map("end_date") @db.DateTime(0)
+  ordering  Int
+  products  products @relation(fields: [productId], references: [id], onUpdate: Restrict, map: "featured_product_ibfk_1")
+
+  @@index([productId], map: "productId")
+  @@map("featured_product")
+}
+
+model groups {
+  id                    Int                  @id @default(autoincrement())
+  name                  String               @db.VarChar(128)
+  order_limits_by_group OrderLimitsByGroup[]
+  user_groups           UserGroups?
+}
+
+model institutions {
+  id          Int          @id @default(autoincrement())
+  name        String       @db.VarChar(128)
+  account     String       @db.VarChar(128)
+  user_orders UserOrders[]
+}
+
+model model {
+  id         Int        @id @default(autoincrement())
+  name       String     @db.VarChar(128)
+  brandId    Int        @map("brand_id")
+  categoryId Int        @map("category_id")
+  brands     brands     @relation(fields: [brandId], references: [id], onDelete: Cascade, map: "model_ibfk_1")
+  categories categories @relation(fields: [categoryId], references: [id], onDelete: Cascade, map: "model_ibfk_2")
+  products   products[]
+
+  @@index([brandId], map: "brandId")
+  @@index([categoryId], map: "categoryId")
+}
+
+model OrderItems {
+  id      Int @id @default(autoincrement())
+  orderId Int @map("order_id")
+  itemId  Int @map("item_id")
+  amount  Int
+
+  @@map("order_items")
+}
+
+model OrderLimitsByGroup {
+  id             Int      @id @default(autoincrement())
+  productId      Int      @map("product_id")
+  groupId        Int      @map("group_id")
+  limitPerOrder  Int      @map("limit_per_order")
+  limitAllOrders Int      @map("limit_all_orders")
+  groups         groups   @relation(fields: [groupId], references: [id], onDelete: Cascade, map: "order_limits_by_group_ibfk_1")
+  products       products @relation(fields: [productId], references: [id], onDelete: Cascade, map: "order_limits_by_group_ibfk_2")
+
+  @@index([groupId], map: "order_limits_by_group_ibfk_1")
+  @@index([productId], map: "order_limits_by_group_ibfk_2")
+  @@map("order_limits_by_group")
+}
+
+model payments {
+  id         Int             @id @default(autoincrement())
+  uuid       String          @unique(map: "uuid") @db.VarChar(64)
+  orderId    Int             @map("order_id")
+  type       payments_type
+  amount     Int
+  method     String          @db.VarChar(128)
+  reference  String          @db.VarChar(128)
+  status     payments_status @default(created)
+  UserOrders UserOrders     @relation(fields: [orderId], references: [id], onUpdate: Restrict, map: "payments_ibfk_1")
+
+  @@index([orderId], map: "orderId")
+}
+
+model PhoneTokens {
+  id     Int                 @id @default(autoincrement())
+  userId Int                 @map("user_id")
+  number String              @db.VarChar(32)
+  reason phone_tokens_reason
+  ref    String              @unique(map: "ref") @db.VarChar(128)
+  hash   String              @db.VarChar(128)
+  state  phone_tokens_state  @default(created)
+  date   DateTime            @default(now()) @db.Timestamp(0)
+  tries  Int                 @default(0)
+  ip     String              @db.VarChar(128)
+  gsmVal String?             @map("gsm_val") @db.VarChar(32)
+  users  users               @relation(fields: [userId], references: [id], onDelete: Cascade, map: "email_tokens_ibfk_2")
+
+  @@index([userId], map: "email_tokens_ibfk_1")
+  @@map("phone_tokens")
+}
+
+model ProductImages {
+  id        Int      @id @default(autoincrement())
+  productId Int      @map("product_id")
+  url       String   @db.VarChar(512)
+  products  products @relation(fields: [productId], references: [id], onDelete: Cascade, map: "product_images_ibfk_1")
+
+  @@index([productId], map: "product_images_ibfk_1")
+  @@map("product_images")
+}
+
+model ProductQuestions {
+  id               Int       @id @default(autoincrement())
+  userId           Int       @map("user_id")
+  productId        Int       @map("product_id")
+  userQuestion     String    @map("user_question") @db.VarChar(2048)
+  userQuestionDate DateTime  @default(now()) @map("userQuestion_date") @db.Timestamp(0)
+  sellerAnswer     String?   @map("seller_answer") @db.VarChar(2048)
+  sellerAnswerDate DateTime? @map("sellerAnswer_date") @db.DateTime(0)
+  questionApproved Int       @default(0) @map("question_approved")
+  answerApproved   Int       @default(0) @map("answer_approved")
+  products         products  @relation(fields: [productId], references: [id], onUpdate: Restrict, map: "product_questions_ibfk_2")
+  users            users     @relation(fields: [userId], references: [id], onUpdate: Restrict, map: "product_questions_ibfk_1")
+
+  @@index([productId], map: "productId")
+  @@index([userId], map: "userId")
+  @@map("product_questions")
+}
+
+model ProductReviews {
+  id             Int      @id @default(autoincrement())
+  productId      Int      @map("product_id")
+  userId         Int      @map("user_id")
+  reviewContent  String   @map("review_content") @db.VarChar(2048)
+  reviewStars    Int      @map("review_stars")
+  reviewDate     DateTime @default(now()) @map("review_date") @db.Timestamp(0)
+  reviewApproved Int      @default(0) @map("review_approved")
+  products       products @relation(fields: [productId], references: [id], onUpdate: Restrict, map: "product_reviews_ibfk_1")
+  users          users    @relation(fields: [userId], references: [id], onUpdate: Restrict, map: "product_reviews_ibfk_2")
+
+  @@index([productId], map: "productId")
+  @@index([userId], map: "userId")
+  @@map("product_reviews")
+}
+
+model ProductSpecs {
+  id        Int      @id @default(autoincrement())
+  productId Int      @map("product_id")
+  name      String   @db.VarChar(128)
+  value     String   @db.VarChar(128)
+  products  products @relation(fields: [productId], references: [id], onDelete: Cascade, map: "product_specs_ibfk_1")
+
+  @@index([productId], map: "product_specs_ibfk_1")
+  @@map("product_specs")
+}
+
+model ProductTaxes {
+  id        Int      @id @default(autoincrement())
+  productId Int      @map("product_id")
+  taxId     Int      @map("tax_id")
+  products  products @relation(fields: [productId], references: [id], onDelete: Cascade, map: "product_taxes_ibfk_1")
+  taxes     taxes    @relation(fields: [taxId], references: [id], onUpdate: Restrict, map: "product_taxes_ibfk_2")
+
+  @@index([productId], map: "product_taxes_ibfk_1")
+  @@index([taxId], map: "taxId")
+  @@map("product_taxes")
+}
+
+model products {
+  id                      Int                  @id @default(autoincrement())
+  seller                  Int
+  modelId                 Int                  @map("model_id")
+  description             String               @db.Text
+  startDate               DateTime             @map("start_date") @db.DateTime(0)
+  endDate                 DateTime             @map("end_date") @db.DateTime(0)
+  minAmount               Int                  @map("min_amount")
+  maxAmount               Int                  @map("max_amount")
+  totalAmount             Int                  @map("total_amount")
+  maxDiscount             Int                  @map("max_discount")
+  discountStep            Int                  @map("discount_step")
+  normalPrice             Int                  @map("normal_price")
+  listingPrice            Int                  @map("listing_price")
+  numOrders               Int                  @default(0) @map("num_orders")
+  participants            Int                  @default(0)
+  instantDiscountPercent  Float                @map("instant_discount_percent")
+  instantPrice            Float                @map("instant_price")
+  targetPrice             Int                  @map("target_price")
+  downpayment             Int
+  blockingStock           Int                  @default(0) @map("blocking_stock")
+  model                   model                @relation(fields: [modelId], references: [id], onUpdate: Restrict, map: "products_ibfk_1")
+  seller_productsToseller seller               @relation(fields: [seller], references: [id], onUpdate: Restrict, map: "products_ibfk_2")
+  featured_product        FeaturedProduct[]
+  order_limits_by_group   OrderLimitsByGroup[]
+  product_images          ProductImages[]
+  product_questions       ProductQuestions[]
+  product_reviews         ProductReviews[]
+  product_specs           ProductSpecs[]
+  product_taxes           ProductTaxes[]
+  user_cart_items         UserCartItems[]
+  user_favorites          UserFavorites[]
+  user_orders             UserOrders[]
+
+  @@index([modelId], map: "products_ibfk_1")
+  @@index([seller], map: "seller")
+}
+
+model RatingValues {
+  id                        Int                      @id @default(autoincrement())
+  type                      rating_values_type
+  prompt                    String                   @db.VarChar(512)
+  user_chart_seller_ratings UserChartSellerRatings[]
+
+  @@map("rating_values")
+}
+
+model ReturnReasons {
+  id                             Int                          @id @default(autoincrement())
+  reasonText                     String                       @map("reason_text") @db.VarChar(1024)
+  commentRequired                Int                          @default(0) @map("comment_required")
+  formType                       return_reasons_formType      @default(both)
+  user_cart_item_return_requests UserCartItemReturnRequests[]
+
+  @@map("return_reasons")
+}
+
+model seller {
+  id                        Int                      @id @default(autoincrement())
+  status                    seller_status            @default(created)
+  name                      String                   @db.VarChar(1024)
+  marketplaceName           String                   @map("marketplace_name") @db.VarChar(128)
+  marketplaceLogo           String?                  @map("marketplace_logo") @db.VarChar(128)
+  marketplaceUuid           String?                  @map("marketplace_uuid") @db.VarChar(128)
+  type                      Int
+  contactName               String                   @map("contact_name") @db.VarChar(128)
+  trIdNum                   String                   @map("tr_id_num") @db.VarChar(24)
+  taxOffice                 String                   @map("tax_office") @db.VarChar(64)
+  phone                     String                   @db.VarChar(24)
+  iban                      String                   @db.VarChar(128)
+  adress                    String                   @db.VarChar(1024)
+  products                  products[]
+  user_chart_seller_ratings UserChartSellerRatings[]
+  user_seller_access        UserSellerAccess[]
+}
+
+model SendgridCredentials {
+  id    Int    @id @default(autoincrement())
+  name  String @db.VarChar(512)
+  email String @db.VarChar(521)
+  token String @db.VarChar(1024)
+
+  @@map("sendgrid_credentials")
+}
+
+model SmsCredentials {
+  id       Int    @id @default(autoincrement())
+  username String @db.VarChar(64)
+  password String @db.VarChar(64)
+  sender   String @db.VarChar(64)
+  active   Int
+
+  @@map("sms_credentials")
+}
+
+model taxes {
+  id              Int             @id @default(autoincrement())
+  name            String          @db.VarChar(64)
+  percent         Float
+  product_taxes   ProductTaxes[]
+  user_cart_taxes UserCartTaxes[]
+}
+
+model tokens {
+  id         Int     @id @default(autoincrement())
+  user       Int
+  token      String  @unique(map: "token") @db.VarChar(256)
+  hash       String  @db.VarChar(256)
+  notifToken String? @unique(map: "notif_token") @map("notif_token") @db.VarChar(1024)
+  client     String  @db.VarChar(42)
+  userAgent  String  @map("user_agent") @db.Text
+  users      users   @relation(fields: [user], references: [id], onDelete: Cascade, map: "tokens_ibfk_1")
+
+  @@index([user], map: "tokens_ibfk_1")
+}
+
+model UserAddress {
+  id                                           Int        @id @default(autoincrement())
+  supersededBy                                 Int?       @map("superseded_by")
+  hidden                                       Int
+  userId                                       Int        @map("user_id")
+  addressTitle                                 String     @map("address_title") @db.VarChar(128)
+  firstName                                    String     @map("first_name") @db.VarChar(512)
+  lastName                                     String     @map("last_name") @db.VarChar(512)
+  isCorporate                                  Int        @map("is_corporate") @db.TinyInt
+  city                                         String     @db.VarChar(80)
+  district                                     String     @db.VarChar(80)
+  addressText                                  String     @map("address_text") @db.VarChar(300)
+  phone                                        String     @db.VarChar(80)
+  town                                         String     @db.VarChar(80)
+  default                                      Boolean    @default(false)
+  country                                      String     @db.VarChar(100)
+  companyName                                  String?    @map("company_name") @db.VarChar(512)
+  taxNumber                                    String?    @map("tax_number") @db.VarChar(32)
+  taxOffice                                    String?    @map("tax_office") @db.VarChar(32)
+  users                                        users      @relation(fields: [userId], references: [id], onDelete: Cascade, map: "user_address_ibfk_1")
+  // user_cart_user_addressTouser_cart_address_id UserCart[] @relation("user_addressTouser_cart_address_id")
+  // user_cart_user_addressTouser_cart_invoice_id UserCart[] @relation("user_addressTouser_cart_invoice_id")
+
+  @@index([userId], map: "userId")
+  @@map("user_address")
+}
+
+model UserCart {
+  id                                             Int                      @id @default(autoincrement())
+  uuid                                           String?                  @unique(map: "uuid") @db.VarChar(42)
+  userId                                         Int                      @map("user_id")
+  status                                         user_cart_status         @default(created)
+  subTotal                                       Int                      @default(0) @map("sub_total")
+  totalTax                                       Int                      @default(0) @map("total_tax")
+  dateCreated                                    DateTime                 @default(now()) @map("date_created") @db.Timestamp(0)
+  dateUpdated                                    DateTime                 @default(now()) @map("date_updated") @db.DateTime(0)
+  invoiceId                                      Int?                     @map("invoice_id")
+  paymentId                                      String?                  @map("payment_id") @db.VarChar(32)
+  addressId                                      Int?                     @map("address_id")
+  // user_address_user_addressTouser_cart_addressId UserAddress?             @relation("user_addressTouser_cart_addressId", fields: [addressId], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "user_cart_ibfk_3")
+  // user_address_user_addressTouser_cart_invoiceId UserAddress?             @relation("user_addressTouser_cart_invoiceId", fields: [invoiceId], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "user_cart_ibfk_2")
+  users                                          users                    @relation(fields: [userId], references: [id], onUpdate: Restrict, map: "user_cart_ibfk_1")
+  user_cart_items                                UserCartItems[]
+  user_cart_taxes                                UserCartTaxes[]
+  user_chart_seller_ratings                      UserChartSellerRatings[]
+
+  @@index([addressId], map: "addressId")
+  @@index([invoiceId], map: "invoiceId")
+  @@index([userId], map: "userId")
+  @@map("user_cart")
+}
+
+model UserCartItemReturnRequests {
+  id             Int                                   @id @default(autoincrement())
+  userCartItemId Int                                   @map("user_cart_item_id")
+  returnReasonId Int                                   @map("return_reason_id")
+  returnAmount   Int                                   @map("return_amount")
+  notes          String                                @db.VarChar(1024)
+  date           DateTime                              @default(now()) @db.Timestamp(0)
+  status         user_cart_item_return_requests_status @default(created)
+  ReturnReasons  ReturnReasons                        @relation(fields: [returnReasonId], references: [id], onUpdate: Restrict, map: "user_cart_item_return_requests_ibfk_2")
+  UserCartItems  UserCartItems                       @relation(fields: [userCartItemId], references: [id], onUpdate: Restrict, map: "user_cart_item_return_requests_ibfk_1")
+
+  @@index([returnReasonId], map: "returnReasonId")
+  @@index([userCartItemId], map: "userCartItemId")
+  @@map("user_cart_item_return_requests")
+}
+
+model UserCartItems {
+  id                             Int                             @id @default(autoincrement())
+  cartId                         Int                             @map("cart_id")
+  productId                      Int                             @map("product_id")
+  amount                         Int
+  totalPrice                     Int?                            @map("total_price")
+  paymentId                      String?                         @map("payment_id") @db.VarChar(32)
+  block                          Int                             @default(0)
+  dateCreated                    DateTime                        @default(now()) @map("date_created") @db.Timestamp(0)
+  dateUpdated                    DateTime                        @default(now()) @map("date_updated") @db.DateTime(0)
+  deliveryStatus                 user_cart_items_delivery_status @map("delivery_status")
+  UserCart                       UserCart                       @relation(fields: [cartId], references: [id], onDelete: Cascade, map: "order_items_ibfk_2")
+  products                       products                        @relation(fields: [productId], references: [id], onDelete: Cascade, map: "order_items_ibfk_1")
+  user_cart_item_return_requests UserCartItemReturnRequests[]
+
+  @@index([productId], map: "order_items_ibfk_1")
+  @@index([cartId], map: "order_items_ibfk_2")
+  @@map("user_cart_items")
+}
+
+model UserCartReturns {
+  id         Int @id @default(autoincrement())
+  userCartId Int @map("user_cart_id")
+  status     Int
+
+  @@map("user_cart_returns")
+}
+
+model UserCartTaxes {
+  id       Int       @id @default(autoincrement())
+  cartId   Int       @map("cart_id")
+  taxId    Int       @map("tax_id")
+  amount   Int
+  UserCart UserCart @relation(fields: [cartId], references: [id], onDelete: Cascade, map: "user_cart_taxes_ibfk_2")
+  taxes    taxes     @relation(fields: [taxId], references: [id], onDelete: Cascade, map: "user_cart_taxes_ibfk_1")
+
+  @@index([taxId], map: "user_cart_taxes_ibfk_1")
+  @@index([cartId], map: "user_cart_taxes_ibfk_2")
+  @@map("user_cart_taxes")
+}
+
+model UserChartSellerRatings {
+  id            Int           @id @default(autoincrement())
+  cartId        Int           @map("cart_id")
+  sellerId      Int           @map("seller_id")
+  ratingValueId Int           @map("rating_value_id")
+  value         String        @db.VarChar(512)
+  date          DateTime      @default(now()) @db.Timestamp(0)
+  UserCart      UserCart     @relation(fields: [cartId], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "user_chart_seller_ratings_ibfk_1")
+  RatingValues  RatingValues @relation(fields: [ratingValueId], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "user_chart_seller_ratings_ibfk_2")
+  seller        seller        @relation(fields: [sellerId], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "user_chart_seller_ratings_ibfk_3")
+
+  @@unique([cartId, sellerId, ratingValueId], map: "cartId")
+  @@index([ratingValueId], map: "user_chart_seller_ratings_ibfk_2")
+  @@index([sellerId], map: "user_chart_seller_ratings_ibfk_3")
+  @@map("user_chart_seller_ratings")
+}
+
+model UserFavorites {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  productId Int      @map("product_id")
+  products  products @relation(fields: [productId], references: [id], onDelete: Cascade, map: "user_favorites_ibfk_1")
+  users     users    @relation(fields: [userId], references: [id], onDelete: Cascade, map: "user_favorites_ibfk_2")
+
+  @@unique([productId, userId], map: "productId")
+  @@index([userId], map: "user_favorites_ibfk_2")
+  @@map("user_favorites")
+}
+
+model UserGroups {
+  id        Int       @id @default(autoincrement())
+  userId    Int       @map("user_id")
+  groupId   Int       @unique(map: "group_id") @map("group_id")
+  startDate DateTime  @default(now()) @map("start_date") @db.Timestamp(0)
+  validThru DateTime? @map("valid_thru") @db.DateTime(0)
+  groups    groups    @relation(fields: [groupId], references: [id], onDelete: Cascade, map: "user_groups_ibfk_2")
+  users     users     @relation(fields: [userId], references: [id], onDelete: Cascade, map: "user_groups_ibfk_1")
+
+  @@index([userId], map: "user_groups_ibfk_1")
+  @@map("user_groups")
+}
+
+model UserOrders {
+  id            Int          @id @default(autoincrement())
+  userId        Int          @map("user_id")
+  productId     Int          @map("product_id")
+  institutionId Int          @map("institution_id")
+  quantity      Int
+  totalPaid     Int          @map("total_paid")
+  amountDue     Int          @map("amount_due")
+  date          DateTime     @default(now()) @db.Timestamp(0)
+  institutions  institutions @relation(fields: [institutionId], references: [id], onUpdate: Restrict, map: "user_orders_ibfk_3")
+  products      products     @relation(fields: [productId], references: [id], onUpdate: Restrict, map: "user_orders_ibfk_1")
+  users         users        @relation(fields: [userId], references: [id], onUpdate: Restrict, map: "user_orders_ibfk_2")
+  payments      payments[]
+
+  @@index([institutionId], map: "institutionId")
+  @@index([productId], map: "productId")
+  @@index([userId], map: "userId")
+  @@map("user_orders")
+}
+
+model UserSellerAccess {
+  id          Int                            @id @default(autoincrement())
+  userId      Int                            @map("user_id")
+  sellerId    Int                            @map("seller_id")
+  permissions user_seller_access_permissions @default(manager)
+  seller      seller                         @relation(fields: [sellerId], references: [id], onUpdate: Restrict, map: "user_seller_access_ibfk_1")
+  users       users                          @relation(fields: [userId], references: [id], onUpdate: Restrict, map: "user_seller_access_ibfk_2")
+
+  @@unique([sellerId, userId], map: "sellerId")
+  @@index([userId], map: "userId")
+  @@map("user_seller_access")
+}
+
+model users {
+  id                 Int                @id @default(autoincrement())
+  email              String?            @unique(map: "email") @db.VarChar(521)
+  phone              String?            @unique(map: "phone") @db.VarChar(32)
+  password           String?            @db.VarChar(512)
+  role               users_role         @default(standart)
+  firstName          String             @map("first_name") @db.VarChar(128)
+  lastName           String             @map("last_name") @db.VarChar(128)
+  emailConfirmed     Int                @default(0) @map("email_confirmed") @db.TinyInt
+  image              String?            @db.VarChar(512)
+  createdDate        DateTime           @default(now()) @map("created_date") @db.Timestamp(0)
+  createdIp          String             @map("created_ip") @db.VarChar(64)
+  stellarId          String?            @unique(map: "stellar_id") @map("stellar_id") @db.VarChar(512)
+  stellarWallet      String?            @map("stellar_wallet") @db.VarChar(512)
+  email_tokens       EmailTokens[]
+  phone_tokens       PhoneTokens[]
+  product_questions  ProductQuestions[]
+  product_reviews    ProductReviews[]
+  tokens             tokens[]
+  user_address       UserAddress[]
+  user_cart          UserCart[]
+  user_favorites     UserFavorites[]
+  user_groups        UserGroups[]
+  user_orders        UserOrders[]
+  user_seller_access UserSellerAccess[]
+}
+
+enum app_response_level {
+  debug
+  warning
+  error
+}
+
+enum email_tokens_reason {
+  password_reset
+  register
+}
+
+enum email_tokens_state {
+  created
+  timedout
+  used
+}
+
+enum payments_type {
+  downpayment
+  refund
+  payment
+}
+
+enum payments_status {
+  proccessing
+  failed
+  successful
+  created
+}
+
+enum phone_tokens_reason {
+  add_number
+  password_reset
+  register
+  login
+}
+
+enum phone_tokens_state {
+  created
+  invalidated
+  timed_out
+  used
+}
+
+enum rating_values_type {
+  star
+  text
+}
+
+enum return_reasons_formType {
+  cancel
+  return
+  both
+}
+
+enum seller_status {
+  created
+  registered
+  active
+  waiting_update
+}
+
+enum user_cart_status {
+  created
+  blocking
+  paid
+  preparing
+  delivering
+  delivered
+  canceled
+  refunded
+}
+
+enum user_cart_item_return_requests_status {
+  created
+  approved
+  success_no_product_return
+  success
+  denied
+  waiting_for_shipment
+  shipping
+  seller_rejected
+  proccessing_refund
+}
+
+enum user_cart_items_delivery_status {
+  created
+  shipped
+  delivered
+  cancelled
+}
+
+enum user_seller_access_permissions {
+  manager
+}
+
+enum users_role {
+  superadmin
+  admin
+  standart
+}
