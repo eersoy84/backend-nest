@@ -1,0 +1,22 @@
+@API_BASE=http://localhost:5000/api
+
+
+get {{API_BASE}}/item/questions/1275
+
+
+###
+get {{API_BASE}}/item/reviews/1290
+
+
+###
+post {{API_BASE}}/item/askQuestion
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjE0MywiZW1haWwiOiJkZW5lbWVAZ21haWwuY29tIiwidHlwZSI6ImFjY2Vzc190b2tlbiIsImlhdCI6MTY0ODQ3NjkxM30.hRtSgsi5CQm0aUPbmVYyKxBRX7ygrcJkJlBWUK53zVM
+
+{
+    "adId":1275,
+    "question":"nabıyonuz la ibneler"
+}
+
+
+

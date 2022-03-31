@@ -18,7 +18,7 @@ post {{API_BASE}}/auth/register
 Content-Type: application/json
 
 {
-    "email":"deneme3@gmail.com",
+    "email":"deneme33@gmail.com",
     "password":"Mhp.1923",
     "firstName":"Eyüp",
     "lastName":"Ersoy",

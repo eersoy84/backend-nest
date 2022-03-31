@@ -1,0 +1,50 @@
+@API_BASE=http://localhost:5000/api
+
+
+get {{API_BASE}}/cart/return-reasons
+
+
+###
+get {{API_BASE}}/cart/rating-form
+
+
+###
+get {{API_BASE}}/cart/list
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjE0MywiZW1haWwiOiJkZW5lbWVAZ21haWwuY29tIiwidHlwZSI6ImFjY2Vzc190b2tlbiIsImlhdCI6MTY0ODQ3NjkxM30.hRtSgsi5CQm0aUPbmVYyKxBRX7ygrcJkJlBWUK53zVM
+
+###
+
+post {{API_BASE}}/cart/get
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjE0MywiZW1haWwiOiJkZW5lbWVAZ21haWwuY29tIiwidHlwZSI6ImFjY2Vzc190b2tlbiIsImlhdCI6MTY0ODQ3NjkxM30.hRtSgsi5CQm0aUPbmVYyKxBRX7ygrcJkJlBWUK53zVM
+
+{
+    "adId":1275,
+    "question":"nabıyonuz la ibneler"
+}
+###
+
+
+post {{API_BASE}}/cart/getBySeller
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjE0MywiZW1haWwiOiJkZW5lbWVAZ21haWwuY29tIiwidHlwZSI6ImFjY2Vzc190b2tlbiIsImlhdCI6MTY0ODQ3NjkxM30.hRtSgsi5CQm0aUPbmVYyKxBRX7ygrcJkJlBWUK53zVM
+
+{
+    "adId":1275,
+    "question":"nabıyonuz la ibneler"
+}
+###
+
+
+post {{API_BASE}}/cart/update
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjE0MywiZW1haWwiOiJkZW5lbWVAZ21haWwuY29tIiwidHlwZSI6ImFjY2Vzc190b2tlbiIsImlhdCI6MTY0ODQ3NjkxM30.hRtSgsi5CQm0aUPbmVYyKxBRX7ygrcJkJlBWUK53zVM
+
+{
+    "adId":1275,
+    "question":"nabıyonuz la ibneler"
+}
+
+
+

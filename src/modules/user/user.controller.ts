@@ -8,8 +8,8 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { GetUser } from 'src/decorator';
-import { JwtGuard } from 'src/guard';
+import { GetUser } from 'src/shared/decorator';
+import { JwtGuard } from 'src/shared/guard';
 import {
   AddPhoneDto,
   EditProfileDto,

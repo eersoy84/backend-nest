@@ -5,11 +5,10 @@ import {
   Body,
   ClassSerializerInterceptor,
   UseInterceptors,
+  Ip,
 } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
 import { AuthService } from './auth.service';
-import { LoginDto, UserDto } from './dto';
-import { RegisterDto } from './dto/register.dto';
+import { LoginDto, RegisterDto } from './dto';
 import { TokenService } from './token.service';
 
 @Controller('auth')
@@ -33,7 +32,13 @@ export class AuthController {
 
   @Post('register')
   @UseInterceptors(ClassSerializerInterceptor)
-  register(@Body() registerDto: RegisterDto) {
-    return this.authService.register(registerDto);
+  register(
+    @Body() registerDto: RegisterDto,
+    @Ip() createdIp: string,
+  ) {
+    return this.authService.register(
+      registerDto,
+      createdIp,
+    );
   }
 }

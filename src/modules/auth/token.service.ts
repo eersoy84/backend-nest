@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import moment from 'moment';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { UserDto } from './dto';

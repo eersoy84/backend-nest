@@ -10,7 +10,7 @@ import {
   Prisma,
   users_role,
 } from '@prisma/client';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaService } from 'src/modules/prisma/prisma.service';
 import {
   LoginDto,
   RegisterDto,
@@ -38,10 +38,11 @@ export class AuthService {
   }
 
   async register(
-    data: Prisma.usersCreateInput,
+    dto: RegisterDto,
+    createdIp: string,
   ): Promise<UserDto | undefined> {
     const oldUser = await this.checkUserEmail(
-      data.email,
+      dto.email,
     );
     if (oldUser) {
       throw new HttpException(
@@ -51,17 +52,16 @@ export class AuthService {
     }
     const salt = await bcrypt.genSalt();
     const hash = await bcrypt.hash(
-      data.password,
+      dto.password,
       salt,
     );
     const user = await this.prisma.users.create({
       data: {
-        email: data.email,
+        email: dto.email,
         password: hash,
-        firstName: data.firstName,
-        lastName: data.lastName,
-        createdIp:
-          data.createdIp || '120.123.12.12',
+        firstName: dto.firstName,
+        lastName: dto.lastName,
+        createdIp: createdIp || '120.123.12.12',
       },
     });
     return new UserDto(user);

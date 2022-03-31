@@ -2,13 +2,9 @@ import {
   Controller,
   Get,
   Param,
-  UseGuards,
-  Request,
   ParseIntPipe,
 } from '@nestjs/common';
-import { UserDto } from 'src/auth/dto';
-import { GetUser } from 'src/decorator';
-import { JwtGuard } from 'src/guard';
+
 import { CategoryService } from './category.service';
 
 @Controller('categories')
