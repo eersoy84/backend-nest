@@ -1,15 +1,21 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { UserCartInfoResponseDto } from './dto';
+import {
+  CartRequestDto,
+  UserCartInfoResponseDto,
+} from './dto';
 
 @Injectable()
 export class CartService {
   constructor(private prisma: PrismaService) {}
 
-  async getCartList(id: number) {
-    const userCart = await this.fetchUserCart(id);
-    console.log('usercart', userCart);
-    return userCart;
+  cartGet(id: number, dto: CartRequestDto) {
+    console.log('geldi buraya', id, dto);
+    return 'asdfadsfadsfasdf';
+  }
+
+  getCartList(id: number) {
+    return this.fetchUserCart(id);
   }
 
   getRatingForm() {
@@ -25,7 +31,10 @@ export class CartService {
       await this.prisma.userCart.findMany({
         where: {
           userId: 129,
-          status: 'paid',
+          status: {
+            in: ['paid'],
+          },
+          //   status: 'paid',
         },
         orderBy: [
           {

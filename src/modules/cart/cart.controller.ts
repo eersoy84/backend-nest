@@ -1,7 +1,9 @@
 import {
+  Body,
   ClassSerializerInterceptor,
   Controller,
   Get,
+  ParseIntPipe,
   Post,
   UseGuards,
   UseInterceptors,
@@ -9,6 +11,7 @@ import {
 import { GetUser } from 'src/shared/decorator';
 import { JwtGuard } from 'src/shared/guard';
 import { CartService } from './cart.service';
+import { CartRequestDto } from './dto';
 
 @Controller('cart')
 export class CartController {
@@ -23,7 +26,13 @@ export class CartController {
 
   @Post('get')
   @UseGuards(JwtGuard)
-  cartGet() {}
+  cartGet(
+    @GetUser('id', ParseIntPipe) id: number,
+    @Body() dto: CartRequestDto,
+  ) {
+    console.log('dto', dto);
+    return this.cartService.cartGet(id, dto);
+  }
 
   @Post('getBySeller')
   @UseGuards(JwtGuard)

@@ -20,8 +20,8 @@ Content-Type: application/json
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjE0MywiZW1haWwiOiJkZW5lbWVAZ21haWwuY29tIiwidHlwZSI6ImFjY2Vzc190b2tlbiIsImlhdCI6MTY0ODQ3NjkxM30.hRtSgsi5CQm0aUPbmVYyKxBRX7ygrcJkJlBWUK53zVM
 
 {
-    "adId":1275,
-    "question":"nabıyonuz la ibneler"
+    "cartId":"2b82af33-8779-11ec-8ac6-5cbaef3afeca",
+    "isOrder":1
 }
 ###
 
