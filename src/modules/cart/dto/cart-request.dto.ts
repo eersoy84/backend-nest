@@ -9,6 +9,8 @@ import {
   MaxLength,
   Min,
   MinLength,
+  validate,
+  Validate,
   ValidateIf,
 } from 'class-validator';
 
@@ -18,18 +20,19 @@ export class CartRequestDto {
   @IsNotEmpty()
   @MinLength(30)
   @MaxLength(60)
-  cartId: string;
+  public cartId: string;
 
-  @ValidateIf((q) => q.isOrder !== null)
-  @IsNumber()
-  @Min(1)
-  @Max(2)
+  // @ValidateIf((q) => q.isOrder !== null)
   @IsOptional()
+  @IsNumber()
+  @Min(0)
+  @Max(1)
   isOrder?: number;
 
-  @ValidateIf((q) => q.amount !== null)
-  @IsNumber()
-  @IsEmpty()
+  // @ValidateIf((q) => q.amount !== null)
   @IsOptional()
+  @IsNumber()
+  @Min(0)
+  @Max(100)
   amount?: number;
 }

@@ -7,6 +7,8 @@ import {
   Post,
   UseGuards,
   UseInterceptors,
+  UsePipes,
+  ValidationPipe,
 } from '@nestjs/common';
 import { GetUser } from 'src/shared/decorator';
 import { JwtGuard } from 'src/shared/guard';
@@ -26,11 +28,16 @@ export class CartController {
 
   @Post('get')
   @UseGuards(JwtGuard)
+  @UsePipes(
+    new ValidationPipe({
+      skipMissingProperties: true,
+    }),
+  )
+  @UseInterceptors(ClassSerializerInterceptor)
   cartGet(
     @GetUser('id', ParseIntPipe) id: number,
     @Body() dto: CartRequestDto,
   ) {
-    console.log('dto', dto);
     return this.cartService.cartGet(id, dto);
   }
 
