@@ -4,6 +4,7 @@ import {
 } from 'class-transformer';
 
 import * as moment from 'moment';
+import { ProductDto } from './product.dto';
 import { ReturnsDto } from './returns.dto';
 
 export class UserCartItemResponseDto {
@@ -15,7 +16,10 @@ export class UserCartItemResponseDto {
   readonly returnableAmount: number;
   readonly deliveryStatus: string;
   readonly returns: ReturnsDto[];
-  readonly totalPrice: number;
+  readonly product: ProductDto;
+
+  @Exclude()
+  readonly _totalPrice: number;
 
   @Exclude()
   readonly _profit?: number;
@@ -29,6 +33,17 @@ export class UserCartItemResponseDto {
   @Expose()
   get profit() {
     return `${this._profit?.toLocaleString(
+      undefined,
+      {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      },
+    )}${' '}₺`;
+  }
+
+  @Expose()
+  get totalPrice() {
+    return `${this._totalPrice?.toLocaleString(
       undefined,
       {
         minimumFractionDigits: 2,

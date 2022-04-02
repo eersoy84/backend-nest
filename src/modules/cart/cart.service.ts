@@ -1,8 +1,15 @@
 import { Injectable } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import {
+  CartItemsWithProducts,
+  cartItemsWithProducts,
+  CartWithCartItems,
+  ProductWithModelsAndCategories,
+} from 'src/app.type-constants';
+
 import { PrismaService } from '../prisma/prisma.service';
 import {
   CartRequestDto,
+  ProductDto,
   ReturnsDto,
   UserCartInfoResponseDto,
   UserCartItemResponseDto,
@@ -21,7 +28,7 @@ export class CartService {
   constructor(private prisma: PrismaService) {}
 
   async cartGet(id: number, dto: CartRequestDto) {
-    const cart = await this.userCartFindOne(
+    const cart = await this.UserCartFindOne(
       dto.cartId,
       dto.isOrder,
       id,
@@ -42,7 +49,9 @@ export class CartService {
     return this.prisma.returnReasons.findMany();
   }
 
-  private formatUserCart(cart: any) {
+  private formatUserCart(
+    cart: CartWithCartItems,
+  ) {
     let totalProfit = 0;
     const userCartItems: UserCartItemResponseDto[] =
       cart?.user_cart_items?.map((item: any) => {
@@ -79,11 +88,11 @@ export class CartService {
     return res1;
   }
 
-  private async userCartFindOne(
+  private async UserCartFindOne(
     cartId: string | null,
     isOrder: number | null,
     id: number,
-  ) {
+  ): Promise<CartWithCartItems> {
     const result =
       await this.prisma.userCart.findFirst({
         where: {
@@ -93,56 +102,88 @@ export class CartService {
         select: {
           id: true,
           uuid: true,
+          userId: true,
+          totalTax: true,
           subTotal: true,
           invoiceId: true,
           dateCreated: true,
           dateUpdated: true,
           status: true,
           addressId: true,
-          user_cart_items: {
-            select: {
-              id: true,
-              cartId: true,
-              amount: true,
-              totalPrice: true,
-              dateCreated: true,
-              deliveryStatus: true,
-              products: {
-                select: {
-                  id: true,
-                  normalPrice: true,
-                  instantPrice: true,
-                  totalAmount: true,
-                  numOrders: true,
-                  product_reviews: {
-                    where: {
-                      userId: 129, //değişecek = id
-                    },
-                    select: {
-                      productId: true,
-                      userId: true,
-                    },
-                  },
-                  product_images: {
-                    select: {
-                      url: true,
-                    },
-                  },
-                  seller: true,
-                  model: {
-                    select: {
-                      categories: true,
-                      brands: true,
-                    },
-                  },
-                },
-              },
-            },
-          },
+          paymentId: true,
+          user_cart_items: cartItemsWithProducts,
+          user_chart_seller_ratings: true,
         },
       });
     return result;
   }
+
+  // private async userCartFindOne(
+  //   cartId: string | null,
+  //   isOrder: number | null,
+  //   id: number,
+  // ): Promise<UserCartWithUserCartItems> {
+  //   const result =
+  //     await this.prisma.userCart.findFirst({
+  //       where: {
+  //         uuid: cartId || null || undefined,
+  //         userId: 129, //değişecek = id
+  //       },
+  //       select: {
+  //         id: true,
+  //         uuid: true,
+  //         userId:true,
+  //         totalTax:true,
+  //         subTotal: true,
+  //         invoiceId: true,
+  //         dateCreated: true,
+  //         dateUpdated: true,
+  //         status: true,
+  //         addressId: true,
+  //         user_cart_items: {
+  //           select: {
+  //             id: true,
+  //             cartId: true,
+  //             amount: true,
+  //             totalPrice: true,
+  //             dateCreated: true,
+  //             deliveryStatus: true,
+  //             // products: {
+  //             //   select: {
+  //             //     id: true,
+  //             //     normalPrice: true,
+  //             //     instantPrice: true,
+  //             //     totalAmount: true,
+  //             //     numOrders: true,
+  //             //     product_reviews: {
+  //             //       where: {
+  //             //         userId: 129, //değişecek = id
+  //             //       },
+  //             //       select: {
+  //             //         productId: true,
+  //             //         userId: true,
+  //             //       },
+  //             //     },
+  //             //     product_images: {
+  //             //       select: {
+  //             //         url: true,
+  //             //       },
+  //             //     },
+  //             //     seller: true,
+  //             //     model: {
+  //             //       select: {
+  //             //         categories: true,
+  //             //         brands: true,
+  //             //       },
+  //             //     },
+  //             //   },
+  //             // },
+  //           },
+  //         },
+  //       },
+  //     });
+  //   return result;
+  // }
 
   private async fetchUserCart(id: number) {
     const userCarts =
@@ -209,6 +250,7 @@ export class CartService {
       );
     });
   }
+
   private formatUserCartInfo(
     cart: any,
     totalProfit: number,
@@ -251,7 +293,7 @@ export class CartService {
     return new UserCartItemResponseDto({
       id: item?.id,
       adId: item.product?.id,
-      totalPrice: item.totalPrice,
+      _totalPrice: item.totalPrice,
       _dateCreated: item.dateCreated,
       cartId: item.cartId,
       reviewAvailable,
@@ -260,7 +302,44 @@ export class CartService {
       returnableAmount:
         item.amount - numOfReturnedItems,
       returns: returns,
+      product: this.formatProducts(
+        item?.products,
+      ),
       deliveryStatus: item.delivery_status,
+    });
+  }
+
+  private formatProducts(
+    product: ProductWithModelsAndCategories,
+  ): ProductDto {
+    return new ProductDto({
+      adId: product.id,
+      imageUrl:
+        product &&
+        product.product_images &&
+        product?.product_images[0].url,
+      numOrders: product?.numOrders,
+      quantity: product?.totalAmount,
+      _normalPrice: product?.normalPrice,
+      _instantPrice: product?.instantPrice,
+      modelId: product?.modelId,
+      brandName: product.model.brands.name,
+      brandId: product.model.brandId,
+      modelName: product.model.name,
+      categoryName:
+        product?.model?.categories.name,
+      categoryId: product?.model?.categoryId,
+      sellerId:
+        product?.seller_productsToseller?.id,
+      sellerName:
+        product.seller_productsToseller?.name,
+      sellerLogo:
+        product.seller_productsToseller
+          ?.marketplaceLogo,
+      sellerMarketPlaceName:
+        product?.seller_productsToseller
+          ?.marketplaceName,
+      description: product.description,
     });
   }
 }
