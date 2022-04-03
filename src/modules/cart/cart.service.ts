@@ -28,17 +28,17 @@ export class CartService {
   constructor(private prisma: PrismaService) {}
 
   async cartGet(id: number, dto: CartRequestDto) {
-    const cart = await this.UserCartFindOne(
+    const cart = await this.CartFindOne(
       dto.cartId,
       dto.isOrder,
       id,
     );
     if (!cart) return emptyCart;
-    return this.formatUserCart(cart);
+    return this.formatCart(cart);
   }
 
   getCartList(id: number) {
-    return this.fetchUserCart(id);
+    return this.CartFindMany(id);
   }
 
   getRatingForm() {
@@ -49,31 +49,34 @@ export class CartService {
     return this.prisma.returnReasons.findMany();
   }
 
-  private formatUserCart(
-    cart: CartWithCartItems,
-  ) {
+  private formatCart(cart: CartWithCartItems) {
     let totalProfit = 0;
     const userCartItems: UserCartItemResponseDto[] =
-      cart?.user_cart_items?.map((item: any) => {
-        let profit: any =
-          (item.amount *
-            (item.products?.normalPrice -
-              item.product?.instantPrice)) /
-          100;
-        totalProfit += profit;
-        return this.formatUserCartItem(
-          item,
-          profit,
-        );
-      });
+      cart?.user_cart_items?.map(
+        (item: CartItemsWithProducts) => {
+          let profit: number =
+            (item.amount *
+              (item.products?.normalPrice -
+                item.products?.instantPrice)) /
+            100;
+          totalProfit += profit;
+          return this.formatCartItem(
+            item,
+            profit,
+          );
+        },
+      );
 
     return new UserCartResponseDto({
-      info: this.formatUserCartInfo(cart, 0),
+      info: this.formatCartInfo(
+        cart,
+        totalProfit,
+      ),
       items: userCartItems,
       taxes: [],
-      // ratings: this.getUnique(
-      //   cart?.user_chart_seller_ratings,
-      // ),
+      ratings: this.getUnique(
+        cart?.user_chart_seller_ratings,
+      ),
     });
   }
   private getUnique(sellerRatings: any[]) {
@@ -88,7 +91,7 @@ export class CartService {
     return res1;
   }
 
-  private async UserCartFindOne(
+  private async CartFindOne(
     cartId: string | null,
     isOrder: number | null,
     id: number,
@@ -118,75 +121,8 @@ export class CartService {
     return result;
   }
 
-  // private async userCartFindOne(
-  //   cartId: string | null,
-  //   isOrder: number | null,
-  //   id: number,
-  // ): Promise<UserCartWithUserCartItems> {
-  //   const result =
-  //     await this.prisma.userCart.findFirst({
-  //       where: {
-  //         uuid: cartId || null || undefined,
-  //         userId: 129, //değişecek = id
-  //       },
-  //       select: {
-  //         id: true,
-  //         uuid: true,
-  //         userId:true,
-  //         totalTax:true,
-  //         subTotal: true,
-  //         invoiceId: true,
-  //         dateCreated: true,
-  //         dateUpdated: true,
-  //         status: true,
-  //         addressId: true,
-  //         user_cart_items: {
-  //           select: {
-  //             id: true,
-  //             cartId: true,
-  //             amount: true,
-  //             totalPrice: true,
-  //             dateCreated: true,
-  //             deliveryStatus: true,
-  //             // products: {
-  //             //   select: {
-  //             //     id: true,
-  //             //     normalPrice: true,
-  //             //     instantPrice: true,
-  //             //     totalAmount: true,
-  //             //     numOrders: true,
-  //             //     product_reviews: {
-  //             //       where: {
-  //             //         userId: 129, //değişecek = id
-  //             //       },
-  //             //       select: {
-  //             //         productId: true,
-  //             //         userId: true,
-  //             //       },
-  //             //     },
-  //             //     product_images: {
-  //             //       select: {
-  //             //         url: true,
-  //             //       },
-  //             //     },
-  //             //     seller: true,
-  //             //     model: {
-  //             //       select: {
-  //             //         categories: true,
-  //             //         brands: true,
-  //             //       },
-  //             //     },
-  //             //   },
-  //             // },
-  //           },
-  //         },
-  //       },
-  //     });
-  //   return result;
-  // }
-
-  private async fetchUserCart(id: number) {
-    const userCarts =
+  private async CartFindMany(id: number) {
+    const userCarts: CartWithCartItems[] =
       await this.prisma.userCart.findMany({
         where: {
           userId: 129,
@@ -202,28 +138,17 @@ export class CartService {
         select: {
           id: true,
           uuid: true,
+          userId: true,
+          totalTax: true,
           subTotal: true,
           invoiceId: true,
           dateCreated: true,
           dateUpdated: true,
           status: true,
           addressId: true,
-          user_cart_items: {
-            select: {
-              id: true,
-              cartId: true,
-              amount: true,
-              totalPrice: true,
-              dateCreated: true,
-              products: {
-                select: {
-                  id: true,
-                  normalPrice: true,
-                  instantPrice: true,
-                },
-              },
-            },
-          },
+          paymentId: true,
+          user_cart_items: cartItemsWithProducts,
+          user_chart_seller_ratings: true,
         },
       });
     return this.formatUserCartInfoItems(
@@ -232,33 +157,35 @@ export class CartService {
   }
 
   private formatUserCartInfoItems(
-    userCarts: any,
+    userCarts: CartWithCartItems[],
   ) {
     return userCarts?.map((cart: any) => {
       let totalProfit = 0;
-      const userCartItems = cart?.user_cart_items;
-      userCartItems?.map((item: any) => {
-        let profit =
-          item.amount *
-          (item.products?.normalPrice -
-            item.products?.instantPrice);
-        return (totalProfit += profit);
-      });
-      return this.formatUserCartInfo(
+      cart?.user_cart_items.map(
+        (item: CartItemsWithProducts) => {
+          let profit =
+            item.amount *
+            (item.products?.normalPrice -
+              item.products?.instantPrice);
+          return (totalProfit += profit);
+        },
+      );
+      return this.formatCartInfo(
         cart,
         totalProfit,
       );
     });
   }
 
-  private formatUserCartInfo(
+  private formatCartInfo(
     cart: any,
     totalProfit: number,
   ) {
+    console.log('totalProfit2===>', totalProfit);
     return new UserCartInfoResponseDto({
       id: cart.id,
       uuid: cart.uuid,
-      subTotal: cart.subTotal,
+      _subTotal: cart.subTotal,
       _totalProfit: totalProfit,
       invoiceId: cart.invoiceId,
       shippingId: cart.addressId,
@@ -267,7 +194,7 @@ export class CartService {
     });
   }
 
-  private formatUserCartItem(
+  private formatCartItem(
     item: any,
     profit: number,
   ): UserCartItemResponseDto {

@@ -8,7 +8,8 @@ import * as moment from 'moment';
 export class UserCartInfoResponseDto {
   readonly id?: number;
   readonly uuid?: string;
-  readonly subTotal?: number;
+  @Exclude()
+  readonly _subTotal?: number;
 
   @Exclude()
   readonly _totalProfit?: number;
@@ -30,6 +31,16 @@ export class UserCartInfoResponseDto {
         maximumFractionDigits: 2,
       },
     )}${' '}₺`;
+  }
+
+  @Expose()
+  get subTotal() {
+    return `${(
+      this._subTotal / 100
+    ).toLocaleString(undefined, {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })}${' '}₺`;
   }
 
   @Expose()
