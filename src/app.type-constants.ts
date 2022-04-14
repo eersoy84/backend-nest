@@ -1,23 +1,16 @@
 import { Prisma } from '@prisma/client';
 
-export const cartWithCartItems =
-  Prisma.validator<Prisma.UserCartArgs>()({
+export const modelWithCategoriesAndBrands =
+  Prisma.validator<Prisma.modelArgs>()({
     select: {
       id: true,
-      uuid: true,
-      userId: true,
-      status: true,
-      subTotal: true,
-      dateCreated: true,
-      dateUpdated: true,
-      invoiceId: true,
-      paymentId: true,
-      addressId: true,
-      user_cart_items: true,
-      user_chart_seller_ratings: true,
+      name: true,
+      brandId: true,
+      categoryId: true,
+      brands: true,
+      categories: true,
     },
   });
-
 export const cartItemsWithProducts =
   Prisma.validator<Prisma.UserCartItemsArgs>()({
     select: {
@@ -31,6 +24,7 @@ export const cartItemsWithProducts =
       dateCreated: true,
       dateUpdated: true,
       deliveryStatus: true,
+      user_cart_item_return_requests: true,
       products: {
         select: {
           id: true,
@@ -59,30 +53,33 @@ export const cartItemsWithProducts =
           seller_productsToseller: true,
           product_questions: true,
           product_specs: true,
-          model: {
-            select: {
-              id: true,
-              name: true,
-              brandId: true,
-              categoryId: true,
-              categories: {
-                select: {
-                  id: true,
-                  name: true,
-                },
-              },
-              brands: {
-                select: {
-                  id: true,
-                  name: true,
-                },
-              },
-            },
-          },
+          model: modelWithCategoriesAndBrands,
         },
       },
     },
   });
+export const cartWithCartItems =
+  Prisma.validator<Prisma.UserCartArgs>()({
+    select: {
+      id: true,
+      uuid: true,
+      userId: true,
+      status: true,
+      subTotal: true,
+      dateCreated: true,
+      dateUpdated: true,
+      invoiceId: true,
+      paymentId: true,
+      addressId: true,
+      user_cart_items: cartItemsWithProducts,
+      user_chart_seller_ratings: true,
+    },
+  });
+
+export type ModelWithCategoriesAndBrands =
+  Prisma.modelGetPayload<
+    typeof modelWithCategoriesAndBrands
+  >;
 
 export type CartItemsWithProducts =
   Prisma.UserCartItemsGetPayload<
@@ -132,26 +129,7 @@ export const productWithModelsAndCategories =
           marketplaceUuid: true,
         },
       },
-      model: {
-        select: {
-          id: true,
-          name: true,
-          brandId: true,
-          categoryId: true,
-          categories: {
-            select: {
-              id: true,
-              name: true,
-            },
-          },
-          brands: {
-            select: {
-              id: true,
-              name: true,
-            },
-          },
-        },
-      },
+      model: modelWithCategoriesAndBrands,
     },
   });
 

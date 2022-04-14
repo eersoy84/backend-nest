@@ -43,13 +43,12 @@ export class UserCartItemResponseDto {
 
   @Expose()
   get totalPrice() {
-    return `${this._totalPrice?.toLocaleString(
-      undefined,
-      {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      },
-    )}${' '}₺`;
+    return `${(
+      this._totalPrice / 100
+    ).toLocaleString(undefined, {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })}${' '}₺`;
   }
 
   @Expose()

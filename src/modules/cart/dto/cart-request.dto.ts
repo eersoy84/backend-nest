@@ -35,4 +35,10 @@ export class CartRequestDto {
   @Min(0)
   @Max(100)
   amount?: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  @Max(100)
+  adId?: number;
 }

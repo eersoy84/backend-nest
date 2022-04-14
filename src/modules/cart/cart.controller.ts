@@ -46,8 +46,14 @@ export class CartController {
   cartGetBySeller() {}
 
   @Post('update')
+  @UseInterceptors(ClassSerializerInterceptor)
   @UseGuards(JwtGuard)
-  cartUpdate() {}
+  cartUpdate(
+    @GetUser('id', ParseIntPipe) id: number,
+    @Body() dto: CartRequestDto,
+  ) {
+    return this.cartService.cartUpdate(id, dto);
+  }
 
   @Get('return-reasons')
   getReturnReasons() {

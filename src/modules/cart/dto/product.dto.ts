@@ -18,6 +18,7 @@ export class ProductDto {
 
   @Exclude()
   _instantPrice: number;
+
   modelId: number;
   brandName: string;
   brandId: number;

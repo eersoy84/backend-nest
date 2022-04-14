@@ -1,7 +1,19 @@
-import { Injectable } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+} from '@nestjs/common';
+import {
+  Prisma,
+  products,
+  UserCart,
+  UserCartItems,
+} from '@prisma/client';
+import { equals } from 'class-validator';
 import {
   CartItemsWithProducts,
   cartItemsWithProducts,
+  cartWithCartItems,
   CartWithCartItems,
   ProductWithModelsAndCategories,
 } from 'src/app.type-constants';
@@ -16,7 +28,7 @@ import {
   UserCartResponseDto,
 } from './dto';
 
-let emptyCart = {
+const emptyCart = {
   info: {},
   items: [],
   ratings: [],
@@ -37,6 +49,200 @@ export class CartService {
     return this.formatCart(cart);
   }
 
+  async cartUpdate(
+    id: number,
+    dto: CartRequestDto,
+  ) {
+    const { cartId, adId, amount } = dto;
+    try {
+      const product =
+        await this.prisma.products.findUnique({
+          where: {
+            id: adId,
+          },
+        });
+
+      const cart: CartWithCartItems =
+        await this.CartFindOne(cartId, null, id);
+      let newCart: CartWithCartItems;
+      let remainingNumOfItemsInStock =
+        product.totalAmount -
+        (product.numOrders +
+          product.blockingStock);
+
+      if (!cart) {
+        this.checkRemainingNumOfItemsInStock(
+          remainingNumOfItemsInStock,
+          amount,
+        );
+        newCart = await this.createNewCart(
+          id,
+          product,
+          amount,
+        );
+      } else {
+        const cartItemsLength: number =
+          cart.user_cart_items?.length;
+        const userCartItems: CartItemsWithProducts[] =
+          cart.user_cart_items;
+        const cartItem: CartItemsWithProducts =
+          cart.user_cart_items.find(
+            (item: CartItemsWithProducts) => {
+              item.products.id === adId;
+            },
+          );
+        if (!cartItem) {
+          if (amount <= 0) {
+            throw new HttpException(
+              'Girdiğiniz adet geçersiz!',
+              HttpStatus.BAD_REQUEST,
+            );
+          }
+          this.checkRemainingNumOfItemsInStock(
+            remainingNumOfItemsInStock,
+            amount,
+          );
+          await this.createNewCartItem(
+            cart,
+            product,
+            amount,
+          );
+          this.calculateCartSubTotal(
+            cart.id,
+            cart.subTotal,
+            cartItem.products.normalPrice,
+            amount,
+          );
+        }
+        if (amount < 0) {
+          throw new HttpException(
+            'Girdiğiniz adet geçersiz!',
+            HttpStatus.BAD_REQUEST,
+          );
+        } else if (amount === 0) {
+          if (cartItemsLength === 1) {
+            await this.prisma.userCart.delete({
+              where: {
+                id: cart.id,
+              },
+            });
+            return emptyCart;
+          }
+          var diff = amount - cartItem.amount;
+          await this.calculateCartSubTotal(
+            cart.id,
+            cart.subTotal,
+            cartItem.products.normalPrice,
+            diff,
+          );
+          await this.prisma.userCartItems.delete({
+            where: {
+              id: cartItem.id,
+            },
+          });
+        }
+      }
+    } catch (err) {}
+  }
+
+  async calculateCartSubTotal(
+    cartId: number,
+    cartSubTotal: number,
+    normalPrice: number,
+    amount: number,
+  ) {
+    let newItemPrice = amount * normalPrice;
+    await this.prisma.userCart.update({
+      data: {
+        subTotal: cartSubTotal + newItemPrice,
+      },
+      where: {
+        id: cartId,
+      },
+    });
+  }
+
+  async createNewCartItem(
+    cart: CartWithCartItems,
+    product: products,
+    amount: number,
+  ) {
+    await this.prisma.userCartItems.create({
+      data: {
+        cartId: cart.id,
+        productId: product.id,
+        amount: amount,
+        paymentId: null,
+        block: 0,
+        dateCreated: new Date(Date.now()),
+        dateUpdated: new Date(Date.now()),
+        deliveryStatus: 'created',
+      },
+    });
+  }
+  private async createNewCart(
+    id: number,
+    product: products,
+    amount: number,
+  ): Promise<CartWithCartItems> {
+    const subTotal = amount * product.normalPrice;
+    return await this.prisma.userCart.create({
+      data: {
+        userId: id,
+        status: 'created',
+        subTotal,
+        dateCreated: new Date(Date.now()),
+        dateUpdated: new Date(Date.now()),
+        invoiceId: null,
+        paymentId: null,
+        addressId: null,
+        totalTax: null,
+        user_cart_items: {
+          create: {
+            productId: product.id,
+            amount: amount,
+            paymentId: null,
+            block: 0,
+            dateCreated: new Date(Date.now()),
+            dateUpdated: new Date(Date.now()),
+            deliveryStatus: 'created',
+          },
+        },
+      },
+      select: {
+        id: true,
+        uuid: true,
+        userId: true,
+        totalTax: true,
+        subTotal: true,
+        invoiceId: true,
+        dateCreated: true,
+        dateUpdated: true,
+        status: true,
+        addressId: true,
+        paymentId: true,
+        user_cart_items: cartItemsWithProducts,
+        user_chart_seller_ratings: true,
+      },
+    });
+  }
+  private checkRemainingNumOfItemsInStock(
+    remainingNumOfItemsInStock: number,
+    amount: number,
+  ) {
+    if (remainingNumOfItemsInStock <= 0) {
+      throw new HttpException(
+        'Bü ürün tükenmiştir!',
+        HttpStatus.FORBIDDEN,
+      );
+    }
+    if (amount > remainingNumOfItemsInStock) {
+      throw new HttpException(
+        `Bu üründen maksimum ${remainingNumOfItemsInStock} adet alabilirsiniz!`,
+        HttpStatus.FORBIDDEN,
+      );
+    }
+  }
   getCartList(id: number) {
     return this.CartFindMany(id);
   }
@@ -81,26 +287,42 @@ export class CartService {
   }
   private getUnique(sellerRatings: any[]) {
     let arr1 = sellerRatings?.map(
-      (item) => item.seller_id,
+      (item) => item.sellerId,
     );
     let res1 = arr1.filter(
       (value, index, self) => {
         return self.indexOf(value) === index;
       },
     );
+
     return res1;
   }
 
   private async CartFindOne(
-    cartId: string | null,
-    isOrder: number | null,
+    cartId: string | null | undefined,
+    isOrder: number | null = null,
     id: number,
   ): Promise<CartWithCartItems> {
     const result =
       await this.prisma.userCart.findFirst({
         where: {
           uuid: cartId || null || undefined,
-          userId: 129, //değişecek = id
+          userId: 23, //değişecek = id
+          status:
+            isOrder === 0 || isOrder === null
+              ? {
+                  in: ['created', 'blocking'],
+                }
+              : {
+                  in: [
+                    'paid',
+                    'preparing',
+                    'delivering',
+                    'delivered',
+                    'canceled',
+                    'refunded',
+                  ],
+                },
         },
         select: {
           id: true,
@@ -125,7 +347,7 @@ export class CartService {
     const userCarts: CartWithCartItems[] =
       await this.prisma.userCart.findMany({
         where: {
-          userId: 129,
+          userId: 23,
           status: {
             in: ['paid'],
           },
@@ -181,7 +403,6 @@ export class CartService {
     cart: any,
     totalProfit: number,
   ) {
-    console.log('totalProfit2===>', totalProfit);
     return new UserCartInfoResponseDto({
       id: cart.id,
       uuid: cart.uuid,
@@ -199,7 +420,7 @@ export class CartService {
     profit: number,
   ): UserCartItemResponseDto {
     let numOfReturnedItems = 0;
-    const returns =
+    const returns: ReturnsDto[] =
       item.user_cart_item_return_requests?.map(
         (returnItem: ReturnsDto) => {
           numOfReturnedItems +=
@@ -232,7 +453,7 @@ export class CartService {
       product: this.formatProducts(
         item?.products,
       ),
-      deliveryStatus: item.delivery_status,
+      deliveryStatus: item.deliveryStatus,
     });
   }
 

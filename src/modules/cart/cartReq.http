@@ -20,7 +20,8 @@ Content-Type: application/json
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjE0MywiZW1haWwiOiJkZW5lbWVAZ21haWwuY29tIiwidHlwZSI6ImFjY2Vzc190b2tlbiIsImlhdCI6MTY0ODQ3NjkxM30.hRtSgsi5CQm0aUPbmVYyKxBRX7ygrcJkJlBWUK53zVM
 
 {
-    "cartId":"c79475a6-8818-11ec-b5d2-5cbaef3afeca"
+    "cartId":"0f8e7e57-0bed-11ec-baea-d2c8bee234e7",
+    "isOrder":1
 }
 ###
 
