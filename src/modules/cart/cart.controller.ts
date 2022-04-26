@@ -1,15 +1,4 @@
-import {
-  Body,
-  ClassSerializerInterceptor,
-  Controller,
-  Get,
-  ParseIntPipe,
-  Post,
-  UseGuards,
-  UseInterceptors,
-  UsePipes,
-  ValidationPipe,
-} from '@nestjs/common';
+import { Body, ClassSerializerInterceptor, Controller, Get, ParseIntPipe, Post, UseGuards, UseInterceptors, UsePipes, ValidationPipe } from '@nestjs/common';
 import { GetUser } from 'src/shared/decorator';
 import { JwtGuard } from 'src/shared/guard';
 import { CartService } from './cart.service';
@@ -31,13 +20,10 @@ export class CartController {
   @UsePipes(
     new ValidationPipe({
       skipMissingProperties: true,
-    }),
+    })
   )
   @UseInterceptors(ClassSerializerInterceptor)
-  cartGet(
-    @GetUser('id', ParseIntPipe) id: number,
-    @Body() dto: CartRequestDto,
-  ) {
+  cartGet(@GetUser('id', ParseIntPipe) id: number, @Body() dto: CartRequestDto) {
     return this.cartService.cartGet(id, dto);
   }
 
@@ -48,10 +34,7 @@ export class CartController {
   @Post('update')
   @UseInterceptors(ClassSerializerInterceptor)
   @UseGuards(JwtGuard)
-  cartUpdate(
-    @GetUser('id', ParseIntPipe) id: number,
-    @Body() dto: CartRequestDto,
-  ) {
+  cartUpdate(@GetUser('id', ParseIntPipe) id: number, @Body() dto: CartRequestDto) {
     return this.cartService.cartUpdate(id, dto);
   }
 

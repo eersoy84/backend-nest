@@ -1,0 +1,40 @@
+@API_BASE=http://localhost:5000/api
+
+
+get {{API_BASE}}/order/questions/1275
+
+
+###
+get {{API_BASE}}/order/rateSeller/1290
+
+
+###
+post {{API_BASE}}/order/rateSeller
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjE0MywiZW1haWwiOiJkZW5lbWVAZ21haWwuY29tIiwidHlwZSI6ImFjY2Vzc190b2tlbiIsImlhdCI6MTY0ODQ3NjkxM30.hRtSgsi5CQm0aUPbmVYyKxBRX7ygrcJkJlBWUK53zVM
+
+{
+    "cartId":"eae85b43-0e6c-11ec-baea-d2c8bee234e7",
+    "sellerId":3,
+    "ratings": [
+        {
+            "id": 1,
+            "value": 3
+        },
+        {
+            "id": 3,
+            "value": 3
+        },
+        {
+            "id": 4,
+            "value": 2
+        },
+        {
+            "id": 5,
+            "value": "adasdfasdfasdf"
+        }
+    ]
+}
+
+
+

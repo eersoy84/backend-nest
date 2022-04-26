@@ -9,9 +9,7 @@ export class UserCartResponseDto {
   taxes: any[];
   ratings: any[];
 
-  constructor(
-    partial: Partial<UserCartResponseDto>,
-  ) {
+  constructor(partial: Partial<UserCartResponseDto>) {
     Object.assign(this, partial);
   }
 }
