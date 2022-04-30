@@ -7,20 +7,11 @@ import { ItemModule } from './modules/item/item.module';
 import { UserModule } from './modules/user/user.module';
 import { PrismaModule } from './modules/prisma/prisma.module';
 import { PrismaService } from './modules/prisma/prisma.service';
-import { OrderController } from './modules/order/order.controller';
 import { OrderModule } from './modules/order/order.module';
+import { RoutineModule } from './modules/routine/routine.module';
 
 @Module({
-  imports: [
-    AuthModule,
-    CartModule,
-    ItemModule,
-    CategoryModule,
-    PrismaModule,
-    ConfigModule.forRoot({ isGlobal: true }),
-    UserModule,
-    OrderModule,
-  ],
+  imports: [AuthModule, CartModule, ItemModule, CategoryModule, PrismaModule, ConfigModule.forRoot({ isGlobal: true }), UserModule, OrderModule, RoutineModule],
   providers: [PrismaService],
 })
 export class AppModule {}

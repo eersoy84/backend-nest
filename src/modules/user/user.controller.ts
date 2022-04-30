@@ -1,19 +1,7 @@
-import {
-  Body,
-  ClassSerializerInterceptor,
-  Controller,
-  Get,
-  ParseIntPipe,
-  Post,
-  UseGuards,
-  UseInterceptors,
-} from '@nestjs/common';
+import { Body, ClassSerializerInterceptor, Controller, Delete, Get, ParseIntPipe, Post, UseGuards, UseInterceptors } from '@nestjs/common';
 import { GetUser } from 'src/shared/decorator';
 import { JwtGuard } from 'src/shared/guard';
-import {
-  AddPhoneDto,
-  EditProfileDto,
-} from './dto';
+import { AddPhoneDto, EditProfileDto } from './dto';
 import { UserService } from './user.service';
 
 @Controller('user')
@@ -23,11 +11,13 @@ export class UserController {
   constructor(private userService: UserService) {}
 
   @Post('addPhone')
-  addPhone(
-    @GetUser('id') id: number,
-    @Body() dto: AddPhoneDto,
-  ) {
+  addPhone(@GetUser('id') id: number, @Body() dto: AddPhoneDto) {
     return this.userService.addPhone(id, dto);
+  }
+
+  @Post('editProfile')
+  editProfile(@GetUser('id') id: number, @Body() dto: EditProfileDto) {
+    return this.userService.editProfile(id, dto);
   }
 
   @Get('address')
@@ -35,11 +25,15 @@ export class UserController {
     return this.userService.getUserAddress(id);
   }
 
-  @Post('editProfile')
-  editProfile(
-    @GetUser('id') id: number,
-    @Body() dto: EditProfileDto,
-  ) {
-    return this.userService.editProfile(id, dto);
+  //unimplemented yet
+  @Post('address')
+  setAddress() {
+    this.userService.setAddress();
+  }
+
+  //unimplemented yet
+  @Delete('address/:id')
+  deleteAddress() {
+    this.userService.deleteAddress();
   }
 }

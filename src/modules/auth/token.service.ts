@@ -5,22 +5,13 @@ import { UserDto } from './dto';
 
 @Injectable({})
 export class TokenService {
-  constructor(
-    private config: ConfigService,
-    private jwt: JwtService,
-  ) {}
+  constructor(private config: ConfigService, private jwt: JwtService) {}
 
   async getToken(user: UserDto): Promise<string> {
-    return await this.generateToken(
-      user,
-      'access_token',
-    );
+    return await this.generateToken(user, 'access_token');
   }
 
-  private async generateToken(
-    user: UserDto,
-    type: string,
-  ): Promise<string> {
+  private async generateToken(user: UserDto, type: string): Promise<string> {
     const payload = {
       sub: user.id,
       type,

@@ -1,24 +1,12 @@
-import {
-  Injectable,
-  NotImplementedException,
-} from '@nestjs/common';
+import { Injectable, NotImplementedException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import {
-  AskQuestionDto,
-  QuestionResponseDto,
-  ReviewResponseDto,
-} from './dto';
+import { AskQuestionDto, QuestionResponseDto, ReviewResponseDto } from './dto';
 
 @Injectable()
 export class ItemService {
-  constructor(
-    private readonly prisma: PrismaService,
-  ) {}
+  constructor(private readonly prisma: PrismaService) {}
 
-  async askQuestion(
-    id: number,
-    dto: AskQuestionDto,
-  ) {
+  async askQuestion(id: number, dto: AskQuestionDto) {
     await this.prisma.productQuestions.create({
       data: {
         userId: id,
@@ -40,23 +28,20 @@ export class ItemService {
     return this.getQuestionsWithUser(adId);
   }
 
-  private async getReviewsWithUser(
-    adId: number,
-  ): Promise<ReviewResponseDto[]> {
-    const reviews =
-      await this.prisma.productReviews.findMany({
-        where: {
-          productId: adId,
-        },
-        include: {
-          users: {
-            select: {
-              firstName: true,
-              lastName: true,
-            },
+  private async getReviewsWithUser(adId: number): Promise<ReviewResponseDto[]> {
+    const reviews = await this.prisma.productReviews.findMany({
+      where: {
+        productId: adId,
+      },
+      include: {
+        users: {
+          select: {
+            firstName: true,
+            lastName: true,
           },
         },
-      });
+      },
+    });
 
     return reviews.map((review) => {
       return new ReviewResponseDto({
@@ -70,25 +55,20 @@ export class ItemService {
     });
   }
 
-  private async getQuestionsWithUser(
-    adId: number,
-  ): Promise<QuestionResponseDto[]> {
-    const questions =
-      await this.prisma.productQuestions.findMany(
-        {
-          where: {
-            productId: adId,
-          },
-          include: {
-            users: {
-              select: {
-                firstName: true,
-                lastName: true,
-              },
-            },
+  private async getQuestionsWithUser(adId: number): Promise<QuestionResponseDto[]> {
+    const questions = await this.prisma.productQuestions.findMany({
+      where: {
+        productId: adId,
+      },
+      include: {
+        users: {
+          select: {
+            firstName: true,
+            lastName: true,
           },
         },
-      );
+      },
+    });
     return questions.map((question) => {
       return new QuestionResponseDto({
         id: question.id,

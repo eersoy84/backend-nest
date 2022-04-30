@@ -2,14 +2,17 @@ import { Injectable } from '@nestjs/common';
 import { Prisma, users } from '@prisma/client';
 import { UserDto } from 'src/modules/auth/dto';
 import { PrismaService } from 'src/modules/prisma/prisma.service';
-import {
-  AddPhoneDto,
-  EditProfileDto,
-} from './dto';
+import { AddPhoneDto, EditProfileDto } from './dto';
 // import { UserAddressDto } from './dto';
 
 @Injectable()
 export class UserService {
+  deleteAddress() {
+    throw new Error('Method not implemented.');
+  }
+  setAddress() {
+    throw new Error('Method not implemented.');
+  }
   constructor(public prisma: PrismaService) {}
 
   addPhone(id: number, dto: AddPhoneDto) {
@@ -17,28 +20,23 @@ export class UserService {
   }
 
   async getUserAddress(id: number) {
-    const userAddress =
-      await this.prisma.userAddress.findMany({
-        where: {
-          userId: 129,
-        },
-      });
+    const userAddress = await this.prisma.userAddress.findMany({
+      where: {
+        userId: 129,
+      },
+    });
     return userAddress;
   }
 
-  async editProfile(
-    id: number,
-    dto: EditProfileDto,
-  ) {
-    const updatedUser =
-      await this.prisma.users.update({
-        data: {
-          ...dto,
-        },
-        where: {
-          id: id,
-        },
-      });
+  async editProfile(id: number, dto: EditProfileDto) {
+    const updatedUser = await this.prisma.users.update({
+      data: {
+        ...dto,
+      },
+      where: {
+        id: id,
+      },
+    });
     return new UserDto(updatedUser);
   }
 

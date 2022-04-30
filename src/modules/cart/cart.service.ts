@@ -2,6 +2,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { Prisma, products, UserCart, UserCartItems } from '@prisma/client';
 import { equals } from 'class-validator';
 import { CartItemsWithProducts, cartItemsWithProducts, cartWithCartItems, CartWithCartItems, ProductWithModelsAndCategories } from 'src/app.type-constants';
+import { RoutineService } from 'src/modules/routine/routine.service';
 
 import { PrismaService } from '../prisma/prisma.service';
 import { CartRequestDto, ProductDto, ReturnsDto, UserCartInfoResponseDto, UserCartItemResponseDto, UserCartResponseDto } from './dto';
@@ -15,7 +16,7 @@ const emptyCart = {
 
 @Injectable()
 export class CartService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService, private routineService: RoutineService) {}
 
   async cartGet(id: number, dto: CartRequestDto) {
     const cart = await this.CartFindOne(dto.cartId, dto.isOrder, id);
@@ -314,30 +315,8 @@ export class CartService {
       _profit: profit,
       returnableAmount: item.amount - numOfReturnedItems,
       returns: returns,
-      product: this.formatProducts(item?.products),
+      product: this.routineService.formatProducts(item?.products),
       deliveryStatus: item.deliveryStatus,
-    });
-  }
-
-  private formatProducts(product: ProductWithModelsAndCategories): ProductDto {
-    return new ProductDto({
-      adId: product.id,
-      imageUrl: product && product.product_images && product?.product_images[0].url,
-      numOrders: product?.numOrders,
-      quantity: product?.totalAmount,
-      _normalPrice: product?.normalPrice,
-      _instantPrice: product?.instantPrice,
-      modelId: product?.modelId,
-      brandName: product.model.brands.name,
-      brandId: product.model.brandId,
-      modelName: product.model.name,
-      categoryName: product?.model?.categories.name,
-      categoryId: product?.model?.categoryId,
-      sellerId: product?.seller_productsToseller?.id,
-      sellerName: product.seller_productsToseller?.name,
-      sellerLogo: product.seller_productsToseller?.marketplaceLogo,
-      sellerMarketPlaceName: product?.seller_productsToseller?.marketplaceName,
-      description: product.description,
     });
   }
 }
