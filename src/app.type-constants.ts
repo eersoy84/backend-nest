@@ -10,6 +10,30 @@ export const modelWithCategoriesAndBrands = Prisma.validator<Prisma.modelArgs>()
     categories: true,
   },
 });
+
+export const product = Prisma.validator<Prisma.productsArgs>()({
+  select: {
+    id: true,
+    seller: true,
+    description: true,
+    startDate: true,
+    endDate: true,
+    minAmount: true,
+    maxAmount: true,
+    totalAmount: true,
+    maxDiscount: true,
+    discountStep: true,
+    normalPrice: true,
+    listingPrice: true,
+    numOrders: true,
+    participants: true,
+    instantDiscountPercent: true,
+    instantPrice: true,
+    targetPrice: true,
+    blockingStock: true,
+  },
+});
+
 export const cartItemsWithProducts = Prisma.validator<Prisma.UserCartItemsArgs>()({
   select: {
     id: true,
@@ -42,6 +66,7 @@ export const cartItemsWithProducts = Prisma.validator<Prisma.UserCartItemsArgs>(
         instantDiscountPercent: true,
         instantPrice: true,
         targetPrice: true,
+        blockingStock: true,
         product_images: {
           select: {
             url: true,
@@ -78,6 +103,8 @@ export type ModelWithCategoriesAndBrands = Prisma.modelGetPayload<typeof modelWi
 export type CartItemsWithProducts = Prisma.UserCartItemsGetPayload<typeof cartItemsWithProducts>;
 
 export type CartWithCartItems = Prisma.UserCartGetPayload<typeof cartWithCartItems>;
+
+export type ProductOnly = Prisma.productsGetPayload<typeof product>;
 
 export const productWithModelsAndCategories = Prisma.validator<Prisma.productsArgs>()({
   select: {

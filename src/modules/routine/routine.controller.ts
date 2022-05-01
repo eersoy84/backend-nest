@@ -1,4 +1,7 @@
-import { ClassSerializerInterceptor, Controller, Delete, Get, Param, ParseIntPipe, Post, UseInterceptors } from '@nestjs/common';
+import { Body, ClassSerializerInterceptor, Controller, Delete, Get, Param, ParseIntPipe, Post, UseGuards, UseInterceptors } from '@nestjs/common';
+import { GetUser } from 'src/shared/decorator';
+import { JwtGuard } from 'src/shared/guard';
+import { FollowDto } from './dto';
 import { RoutineService } from './routine.service';
 
 @Controller('routines')
@@ -18,14 +21,29 @@ export class RoutineController {
   }
 
   @Get('instantadinfo')
-  getInstantAdInfo() {}
+  @UseInterceptors(ClassSerializerInterceptor)
+  getInstantAdInfo() {
+    return this.routineService.getInstantAdInfo();
+  }
 
   @Get('favorites')
-  getFavorites() {}
+  @UseInterceptors(ClassSerializerInterceptor)
+  @UseGuards(JwtGuard)
+  getFavorites(@GetUser('id', ParseIntPipe) userId: number) {
+    return this.routineService.getFavorites(userId);
+  }
 
   @Post('follow')
-  follow() {}
+  @UseInterceptors(ClassSerializerInterceptor)
+  @UseGuards(JwtGuard)
+  follow(@GetUser('id', ParseIntPipe) userId: number, @Body() dto: FollowDto) {
+    return this.routineService.follow(userId, dto);
+  }
 
   @Post('unfollow')
-  unFollow() {}
+  @UseInterceptors(ClassSerializerInterceptor)
+  @UseGuards(JwtGuard)
+  unfollow(@GetUser('id', ParseIntPipe) userId: number, @Body() dto: FollowDto) {
+    return this.routineService.unfollow(userId, dto);
+  }
 }
