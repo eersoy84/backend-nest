@@ -6,7 +6,6 @@ Content-Type: application/json
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjE0MywidHlwZSI6ImFjY2Vzc190b2tlbiIsImlhdCI6MTY0ODYzNzU1Nn0.xWOjiGE3WWTtYhbsKLUk8c4NcEz6ON3iFuZ8RvWlITw
 
 ###
-
 post {{API_BASE}}/user/editProfile
 Content-Type: application/json
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjE0MywidHlwZSI6ImFjY2Vzc190b2tlbiIsImlhdCI6MTY0ODYzNzU1Nn0.xWOjiGE3WWTtYhbsKLUk8c4NcEz6ON3iFuZ8RvWlITw
@@ -15,5 +14,37 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjE0MywidHlwZ
     "firstName": "eyüp",
     "lastName": "ersoyyy"
 }
+
+
 ###
+post {{API_BASE}}/user/address
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjE0MywidHlwZSI6ImFjY2Vzc190b2tlbiIsImlhdCI6MTY0ODYzNzU1Nn0.xWOjiGE3WWTtYhbsKLUk8c4NcEz6ON3iFuZ8RvWlITw
+
+{
+    "id":311,   
+    "addressTitle":"iş ten eve evden işe adresi",
+    "firstName":"Eyup",
+    "lastName":"Ersoy",
+    "town":"Çiğdem Mahallesi",  
+    "phone":"905339672495",
+    "addressText":"selamlar",
+    "city": "Ankara",
+    "district": "Balgat",
+    "isCorporate":  0,
+    "companyName":"",
+    "taxOffice":"",
+    "taxNumber":"",
+    "isDefault": 0,
+    "country": "Turkiye"
+
+}
+
+
+###
+delete {{API_BASE}}/user/address/3154
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjE0MywidHlwZSI6ImFjY2Vzc190b2tlbiIsImlhdCI6MTY0ODYzNzU1Nn0.xWOjiGE3WWTtYhbsKLUk8c4NcEz6ON3iFuZ8RvWlITw
+
+
 

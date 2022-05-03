@@ -381,7 +381,7 @@ model tokens {
 model UserAddress {
   id                                           Int        @id @default(autoincrement())
   supersededBy                                 Int?       @map("superseded_by")
-  hidden                                       Int
+  // hidden                                       Int?       @map("hidden")
   userId                                       Int        @map("user_id")
   addressTitle                                 String     @map("address_title") @db.VarChar(128)
   firstName                                    String     @map("first_name") @db.VarChar(512)

@@ -7,6 +7,7 @@ import { RoutineService } from './routine.service';
 @Controller('routines')
 export class RoutineController {
   constructor(private routineService: RoutineService) {}
+  //https://api.bizleal.com/routines/ads
 
   @Get('ads')
   @UseInterceptors(ClassSerializerInterceptor)

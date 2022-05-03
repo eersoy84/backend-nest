@@ -1,31 +1,58 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { Prisma, users } from '@prisma/client';
 import { UserDto } from 'src/modules/auth/dto';
 import { PrismaService } from 'src/modules/prisma/prisma.service';
-import { AddPhoneDto, EditProfileDto } from './dto';
-// import { UserAddressDto } from './dto';
+import { AddPhoneDto, AddressDto, EditProfileDto } from './dto';
 
 @Injectable()
 export class UserService {
-  deleteAddress() {
-    throw new Error('Method not implemented.');
-  }
-  setAddress() {
-    throw new Error('Method not implemented.');
-  }
   constructor(public prisma: PrismaService) {}
 
   addPhone(id: number, dto: AddPhoneDto) {
     throw new Error('Method not implemented.');
   }
 
-  async getUserAddress(id: number) {
+  async getUserAddress(userId: number) {
     const userAddress = await this.prisma.userAddress.findMany({
       where: {
-        userId: 129,
+        userId,
       },
     });
     return userAddress;
+  }
+
+  async deleteAddress(id: number) {
+    try {
+      const result = await this.prisma.$queryRaw(
+        Prisma.sql`CALL 
+        exposed_delete_address(${id})`
+      );
+      if (!result) return;
+      return { id: result[0].f0 };
+    } catch (err) {
+      if (err instanceof Prisma.PrismaClientKnownRequestError) {
+        if (err.code === 'P2010') {
+          throw new HttpException('Böyle bir adres bulunmamaktadır!', HttpStatus.BAD_REQUEST);
+        }
+      }
+    }
+  }
+
+  async setAddress(userId: number, dto: AddressDto) {
+    try {
+      const result = await this.prisma.$queryRaw(
+        Prisma.sql`CALL exposed_set_address(${userId},
+          ${dto.id},${dto.city},${dto.district},${dto.addressText},${dto.phone},${dto.town}, ${dto.country}, ${dto.firstName}, ${dto.lastName},  ${dto.isCorporate}, ${dto.default},${dto.addressTitle},${dto.companyName}, ${dto.taxNumber}, ${dto.taxOffice})`
+      );
+      if (!result) return;
+      return { id: result[0].f0 };
+    } catch (err) {
+      if (err instanceof Prisma.PrismaClientKnownRequestError) {
+        if (err.code === 'P2010') {
+          throw new HttpException('Böyle bir adres bulunmamaktadır!', HttpStatus.BAD_REQUEST);
+        }
+      }
+    }
   }
 
   async editProfile(id: number, dto: EditProfileDto) {
