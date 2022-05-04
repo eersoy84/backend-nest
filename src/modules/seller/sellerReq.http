@@ -1,0 +1,23 @@
+@API_BASE=http://localhost:5000/api
+
+
+get {{API_BASE}}/seller/list
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjE0MywidHlwZSI6ImFjY2Vzc190b2tlbiIsImlhdCI6MTY0ODYzNzU1Nn0.xWOjiGE3WWTtYhbsKLUk8c4NcEz6ON3iFuZ8RvWlITw
+
+
+
+
+###
+post {{API_BASE}}/seller/ads
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjE0MywidHlwZSI6ImFjY2Vzc190b2tlbiIsImlhdCI6MTY0ODYzNzU1Nn0.xWOjiGE3WWTtYhbsKLUk8c4NcEz6ON3iFuZ8RvWlITw
+
+{
+    "permissionId":4
+}
+
+
+
+
+

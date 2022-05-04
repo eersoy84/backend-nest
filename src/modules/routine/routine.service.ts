@@ -120,6 +120,7 @@ export class RoutineService {
         blockingStock: true,
         product_reviews: true,
         product_specs: true,
+        product_questions: true,
         product_images: {
           select: {
             url: true,

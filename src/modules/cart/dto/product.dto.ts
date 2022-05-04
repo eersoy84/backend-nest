@@ -2,7 +2,7 @@ import { ProductSpecs } from '@prisma/client';
 import { Exclude, Expose } from 'class-transformer';
 import { IsEmpty } from 'class-validator';
 
-import * as moment from 'moment';
+import { QuestionDto } from 'src/modules/seller/dto';
 
 export class ProductDto {
   @Exclude()
@@ -54,8 +54,12 @@ export class ProductDto {
 
   @Exclude()
   _listingPrice: number;
+
   specs: ProductSpecs[];
   images: string[];
+  numOfAskedQuestions: number;
+  answeredQuestions: QuestionDto[];
+  nonAnsweredQuestions: QuestionDto[];
 
   @Exclude()
   _instantDiscountPercent: number;

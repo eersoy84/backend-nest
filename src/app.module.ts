@@ -9,9 +9,10 @@ import { PrismaModule } from './modules/prisma/prisma.module';
 import { PrismaService } from './modules/prisma/prisma.service';
 import { OrderModule } from './modules/order/order.module';
 import { RoutineModule } from './modules/routine/routine.module';
+import { SellerModule } from './modules/seller/seller.module';
 
 @Module({
-  imports: [AuthModule, CartModule, ItemModule, CategoryModule, PrismaModule, ConfigModule.forRoot({ isGlobal: true }), UserModule, OrderModule, RoutineModule],
+  imports: [AuthModule, CartModule, ItemModule, CategoryModule, PrismaModule, ConfigModule.forRoot({ isGlobal: true }), UserModule, OrderModule, RoutineModule, SellerModule],
   providers: [PrismaService],
 })
 export class AppModule {}
