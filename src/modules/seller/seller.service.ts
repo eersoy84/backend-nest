@@ -1,11 +1,15 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { BadRequestException, HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime';
 import { modelWithCategoriesAndBrands, ProductWithModelsAndCategories } from 'src/app.type-constants';
 import { ProductDto } from '../cart/dto';
 import { PrismaService } from '../prisma/prisma.service';
-import { PermissionDto, QuestionDto } from './dto';
+import { AnswerQuestionDto, AnswersDto, PermissionDto, QuestionDto } from './dto';
 
 @Injectable()
 export class SellerService {
+  constructor(private prisma: PrismaService) {}
+
   async getSellers(userId: number) {
     const sellerAccess = await this.prisma.userSellerAccess.findMany({
       where: {
@@ -137,20 +141,32 @@ export class SellerService {
     return access;
   }
 
-  getOrders(userId: number) {
-    throw new Error('Method not implemented.');
-  }
-
-  answerQuestion(userId: number) {
-    throw new Error('Method not implemented.');
+  answerQuestion(dto: AnswersDto) {
+    const { answers } = dto;
+    answers.map(async (item) => {
+      try {
+        await this.prisma.productQuestions.update({
+          data: {
+            ...item,
+            sellerAnswerDate: new Date(),
+          },
+          where: {
+            id: item.id,
+          },
+        });
+      } catch (err) {
+        if (err instanceof PrismaClientKnownRequestError) {
+          throw new BadRequestException('Cevaplanacak soru bulunamadı');
+        }
+      }
+    });
   }
 
   updateSubMerchant(userId: number) {
     throw new Error('Method not implemented.');
   }
+
   createSubMerchant(userId: number) {
     throw new Error('Method not implemented.');
   }
-
-  constructor(private prisma: PrismaService) {}
 }

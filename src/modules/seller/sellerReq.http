@@ -18,6 +18,24 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjE0MywidHlwZ
 }
 
 
+###
+post {{API_BASE}}/seller/answerQuestion
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjE0MywidHlwZSI6ImFjY2Vzc190b2tlbiIsImlhdCI6MTY0ODYzNzU1Nn0.xWOjiGE3WWTtYhbsKLUk8c4NcEz6ON3iFuZ8RvWlITw
+
+{
+    "answers": [
+        {
+            "id": 2,
+            "sellerAnswer":"kufretme kafir bok gibi"
+        },
+        {
+            "id": 3,
+            "sellerAnswer": "siktir git satmıyom aq as"
+        }
+    ]
+}
+    
 
 
 

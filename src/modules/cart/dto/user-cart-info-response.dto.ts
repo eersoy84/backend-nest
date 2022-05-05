@@ -1,7 +1,4 @@
-import {
-  Exclude,
-  Expose,
-} from 'class-transformer';
+import { Exclude, Expose } from 'class-transformer';
 
 import * as moment from 'moment';
 
@@ -24,20 +21,15 @@ export class UserCartInfoResponseDto {
 
   @Expose()
   get totalProfit() {
-    return `${this._totalProfit?.toLocaleString(
-      undefined,
-      {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      },
-    )}${' '}₺`;
+    return `${this._totalProfit?.toLocaleString(undefined, {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })}${' '}₺`;
   }
 
   @Expose()
   get subTotal() {
-    return `${(
-      this._subTotal / 100
-    ).toLocaleString(undefined, {
+    return `${(this._subTotal / 100).toLocaleString(undefined, {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     })}${' '}₺`;
@@ -45,21 +37,15 @@ export class UserCartInfoResponseDto {
 
   @Expose()
   get datePassed() {
-    return moment(this._dateCreated)
-      .locale('tr')
-      .fromNow();
+    return moment(this._dateCreated).locale('tr').fromNow();
   }
 
   @Expose()
   get dateCreated() {
-    return moment(this._dateCreated)
-      .locale('tr')
-      .format('Do MMMM YYYY, HH:MM');
+    return moment(this._dateCreated).locale('tr').format('Do MMMM YYYY, HH:MM');
   }
 
-  constructor(
-    partial: Partial<UserCartInfoResponseDto>,
-  ) {
+  constructor(partial: Partial<UserCartInfoResponseDto>) {
     Object.assign(this, partial);
   }
 }

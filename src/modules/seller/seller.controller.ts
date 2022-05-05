@@ -1,7 +1,7 @@
 import { Body, ClassSerializerInterceptor, Controller, Get, ParseIntPipe, Post, UseGuards, UseInterceptors } from '@nestjs/common';
 import { GetUser } from 'src/shared/decorator';
 import { JwtGuard } from 'src/shared/guard';
-import { PermissionDto } from './dto';
+import { AnswerQuestionDto, AnswersDto, PermissionDto } from './dto';
 
 import { SellerService } from './seller.service';
 
@@ -29,16 +29,10 @@ export class SellerController {
     return this.sellerService.getAds(userId, dto);
   }
 
-  @Post('orders')
-  @UseGuards(JwtGuard)
-  getOrders(@GetUser('id', ParseIntPipe) userId: number) {
-    return this.sellerService.getOrders(userId);
-  }
-
   @Post('answerQuestion')
   @UseGuards(JwtGuard)
-  answerQuestion(@GetUser('id', ParseIntPipe) userId: number) {
-    return this.sellerService.answerQuestion(userId);
+  answerQuestion(@Body() dto: AnswersDto) {
+    return this.sellerService.answerQuestion(dto);
   }
 
   @Post('createSubMerchant')
